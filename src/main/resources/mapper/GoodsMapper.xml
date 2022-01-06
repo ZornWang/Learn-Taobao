@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorn.taobao.mapper.GoodsMapper">
+
+    <resultMap id="Map_user_goods" type="User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="phone" property="phone"/>
+        <result column="avatarUrl" property="avatarUrl"/>
+        <collection property="goodsList" ofType="Goods">
+            <result column="gid" property="id"/>
+            <result column="pictureUrl" property="pictureUrl"/>
+            <result column="name" property="name"/>
+            <result column="type" property="type"/>
+            <result column="price" property="price"/>
+            <result column="introduction" property="introduction"/>
+        </collection>
+    </resultMap>
+
+    <select id="userGoods" resultMap="Map_user_goods">
+        SELECT u.*,g.id gid,g.picture_url pictureUrl,g.name name,g.type type,g.price price,g.introduction introduction
+        FROM user u
+        LEFT JOIN user_goods ug
+        ON u.id = ug.user_id
+        LEFT JOIN goods g
+        ON ug.goods_id = g.id
+        WHERE u.id = #{id}
+    </select>
+
+    <insert id="addGoods" useGeneratedKeys="true" keyProperty="id" parameterType="Goods">
+        insert into goods (picture_url,name,type,price,introduction)
+        values (#{pictureUrl},#{name},#{type},#{price},#{introduction})
+    </insert>
+
+    <insert id="addUserGoods">
+        insert into user_goods (user_id,goods_id,number)
+        values (#{userId},#{goodsId},#{number})
+    </insert>
+
+    <update id="changeGoodsOwner">
+        update user_goods set user_id = #{userId} where goods_id = #{goodsId}
+    </update>
+
+    <update id="changeGoods">
+        update goods
+        set picture_url = #{pictureUrl},
+            name        = #{name},
+            type        = #{type},
+            price       = #{price},
+            introduction=#{introduction};
+        where id = #{id}
+    </update>
+
+    <update id="completeGoods">
+        update goods
+        <set>
+            <if test="picture_url!=null">
+                picture_url = #{pictureUrl},
+            </if>
+            <if test="name!=null">
+                name = #{name},
+            </if>
+            <if test="type!=null">
+                type = #{type},
+            </if>
+            <if test="price!=null">
+                price = #{price}
+            </if>
+            <if test="introduction!=null">
+                introduction=#{introduction}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>
